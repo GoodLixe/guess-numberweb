@@ -106,17 +106,22 @@ class GuessNumberApp {
 
     // Обработчик новой игры
     handleNewGame() {
-        this.game.resetGame();
-        this.ui.showScreen('start');
-        this.ui.clearInputs();
-        this.ui.elements.playerName.focus();
-        
-        console.log('🔄 Игра сброшена, возврат к стартовому экрану');
+    this.game.resetGame();
+    this.ui.updateAttemptsHistory([]); // Очищаем список попыток
+    this.ui.elements.feedbackMessage.textContent = ''; // Очищаем сообщение
+    this.ui.elements.feedbackMessage.className = 'feedback'; // Сбрасываем стили
+    this.ui.showScreen('start');
+    this.ui.clearInputs();
+    this.ui.elements.playerName.value = 'Игрок'; // Сбрасываем имя только при новой игре
+    this.ui.elements.playerName.focus();
+    
+    console.log('🔄 Игра сброшена, возврат к стартовому экрану');
     }
 
     // Обработчик показа статистики
     handleShowStats() {
-        this.ui.showStats();
+        const gameHistory = this.game.getGameHistory();
+        this.ui.showStats(gameHistory);
     }
 
     // Обработчик возврата к игре
@@ -125,26 +130,34 @@ class GuessNumberApp {
         this.ui.focusGuessInput();
     }
 
+
     // Обработчик "играть снова"
     handlePlayAgain() {
-        const currentPlayer = this.game.playerName;
-        this.game.resetGame();
-        this.game.startNewGame(currentPlayer);
-        
-        this.ui.updateGameInfo(this.game.getGameStats());
-        this.ui.clearInputs();
-        this.ui.showScreen('game');
-        this.ui.setGameControlsEnabled(true);
-        this.ui.focusGuessInput();
-
-        console.log(`🔄 Новая игра для: ${currentPlayer}`);
+    const currentPlayer = this.game.playerName;
+    
+    // Начинаем новую игру с тем же игроком
+    this.game.resetGame();
+    this.game.startNewGame(currentPlayer);
+    
+    // Обновляем UI - очищаем историю попыток и сообщение
+    this.ui.updateGameInfo(this.game.getGameStats());
+    this.ui.updateAttemptsHistory([]); // Очищаем список попыток
+    this.ui.elements.feedbackMessage.textContent = ''; // Очищаем сообщение
+    this.ui.elements.feedbackMessage.className = 'feedback'; // Сбрасываем стили
+    this.ui.clearInputs();
+    this.ui.showScreen('game');
+    this.ui.setGameControlsEnabled(true);
+    this.ui.focusGuessInput();
+    
+    console.log(`🔄 Новая игра для: ${currentPlayer}`);
     }
 
     // Получить отладочную информацию
     getDebugInfo() {
         return {
             game: this.game.getGameStats(),
-            secretNumber: this.game.getHint()
+            secretNumber: this.game.getHint(),
+            gameHistory: this.game.getGameHistory()
         };
     }
 }

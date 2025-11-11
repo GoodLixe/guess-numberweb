@@ -6,6 +6,7 @@ class Game {
         this.maxAttempts = 10;
         this.playerName = 'Игрок';
         this.isGameActive = false;
+        this.gameHistory = []; // Добавляем историю игр
     }
 
     // Начать новую игру
@@ -53,6 +54,7 @@ class Game {
             result = 'win';
             message = 'Поздравляем! Вы угадали число!';
             this.isGameActive = false;
+            this.saveGameToHistory(true, attemptNumber); // Сохраняем выигрыш
         }
 
         // Сохраняем попытку
@@ -69,6 +71,7 @@ class Game {
         // Проверяем превышение лимита попыток
         if (attemptNumber >= this.maxAttempts && result !== 'win') {
             this.isGameActive = false;
+            this.saveGameToHistory(false, attemptNumber); // Сохраняем проигрыш
             return {
                 ...attempt,
                 gameOver: true,
@@ -77,6 +80,33 @@ class Game {
         }
 
         return attempt;
+    }
+
+    // Сохранить игру в историю
+    saveGameToHistory(isWin, attemptsCount) {
+        const gameRecord = {
+            playerName: this.playerName,
+            secretNumber: this.secretNumber,
+            attempts: [...this.attempts], // Копируем массив попыток
+            totalAttempts: attemptsCount,
+            isWin: isWin,
+            timestamp: new Date().toISOString(),
+            date: new Date().toLocaleDateString('ru-RU')
+        };
+
+        this.gameHistory.unshift(gameRecord); // Добавляем в начало
+        
+        // Ограничиваем историю последними 10 играми
+        if (this.gameHistory.length > 10) {
+            this.gameHistory = this.gameHistory.slice(0, 10);
+        }
+
+        console.log('💾 Игра сохранена в историю:', gameRecord);
+    }
+
+    // Получить историю игр
+    getGameHistory() {
+        return this.gameHistory;
     }
 
     // Получить текущую статистику игры
@@ -88,11 +118,12 @@ class Game {
             currentAttempt: this.attempts.length,
             maxAttempts: this.maxAttempts,
             isGameActive: this.isGameActive,
-            isGameWon: this.attempts.some(attempt => attempt.result === 'win')
+            isGameWon: this.attempts.some(attempt => attempt.result === 'win'),
+            gameHistory: this.gameHistory // Добавляем историю в статистику
         };
     }
 
-    // Получить историю попыток
+    // Получить историю попыток текущей игры
     getAttemptsHistory() {
         return this.attempts.map(attempt => ({
             number: attempt.attemptNumber,

@@ -144,7 +144,8 @@ class GameUI {
     // Очистка полей ввода
     clearInputs() {
         this.elements.guessInput.value = '';
-        this.elements.playerName.value = 'Игрок';
+        // Не очищаем имя игрока при "Играть снова"
+        // this.elements.playerName.value = 'Игрок';
     }
 
     // Фокус на поле ввода
@@ -158,14 +159,44 @@ class GameUI {
         this.elements.submitGuess.disabled = !enabled;
     }
 
-    // Показать статистику (заглушка)
-    showStats() {
-        this.elements.statsContent.innerHTML = `
-            <div class="stats-placeholder">
-                <p>📊 Статистика будет доступна после подключения базы данных</p>
-                <p>В следующей лабораторной работе мы добавим сохранение игр в IndexedDB</p>
-            </div>
-        `;
+    // Показать статистику с историей игр
+    showStats(gameHistory = []) {
+        let statsHTML;
+        
+        if (gameHistory.length === 0) {
+            statsHTML = `
+                <div class="stats-placeholder">
+                    <p>📊 Статистика будет доступна после завершения игр</p>
+                    <p>Завершите хотя бы одну игру, чтобы увидеть историю</p>
+                </div>
+            `;
+        } else {
+            statsHTML = `
+                <div class="game-history">
+                    <h3>История последних игр</h3>
+                    <div class="history-list">
+                        ${gameHistory.map((game, index) => `
+                            <div class="history-item ${game.isWin ? 'win' : 'lose'}">
+                                <div class="history-header">
+                                    <span class="game-number">Игра #${index + 1}</span>
+                                    <span class="game-date">${game.date}</span>
+                                </div>
+                                <div class="game-details">
+                                    <span class="player">Игрок: ${game.playerName}</span>
+                                    <span class="result ${game.isWin ? 'win' : 'lose'}">
+                                        ${game.isWin ? '🎉 Победа' : '💫 Поражение'}
+                                    </span>
+                                    <span class="attempts">Попыток: ${game.totalAttempts}</span>
+                                    <span class="number">Число: ${game.secretNumber}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        this.elements.statsContent.innerHTML = statsHTML;
         this.showScreen('stats');
     }
 
